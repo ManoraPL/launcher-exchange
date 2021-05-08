@@ -116,7 +116,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ManoraMin.ico" />
-    <Content Include="osmiumlogo.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

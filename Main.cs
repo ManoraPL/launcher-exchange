@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Runtime.InteropServices;
-using System.Linq;
-using System.Text;
+﻿using ManoraLau.Properties;
+using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using System;
 using System.Diagnostics;
-using System.Reflection;
+using System.Drawing;
+using System.IO;
+using System.Collections;
+using System.Net;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.Win32;
-using ManoraLau.Properties;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using System.Net;
+using Manora.Win32;
 
 namespace ManoraLau
 {
@@ -83,9 +79,8 @@ namespace ManoraLau
             catch
             {
             }
-            string loginArgs = "-AUTH_LOGIN=unused -AUTH_PASSWORD=" + " -AUTH_TYPE=exchangecode";
-            string mainArgs = " -epicapp=Fortnite -epicenv=Prod -epiclocale=en-us -epicportal -noeac -fromfl=be -fltoken=h1h4370717422124b232eFac -skippatchcheck";
-            string Args = loginArgs += mainArgs; // nie chce syfu w kodzie | artii
+            string clientargs = $"-epicapp=Fortnite -epicenv=Prod -epiclocale=en-us -epicportal -skippatchcheck -NOSSLPINNING -noeac -fromfl=be -fltoken=h1h4370717422124b232eFac -frombe AUTH_TYPE=exchangecode -AUTH_LOGIN=unused -AUTH_PASSWORD=" + exchbox.Text;
+
             Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", true);
             try
             {
@@ -100,47 +95,71 @@ namespace ManoraLau
                 MessageBox.Show("You have specified the wrong Fortnite file location, make sure that you put great path", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 return;
             }
+
+
             string FNClient = Path.Combine(this.pathTextBox.Text, "FortniteGame\\Binaries\\Win64\\FortniteClient-Win64-Shipping.exe");
+            string EAC = Path.Combine(this.pathTextBox.Text, "FortniteGame\\Binaries\\Win64\\FortniteClient-Win64-Shipping_EAC.exe");
+            string FNL = Path.Combine(this.pathTextBox.Text, "FortniteGame\\Binaries\\Win64\\FortniteLauncher.exe");
+
+
+
             if (!File.Exists(FNClient))
             {
                 MessageBox.Show("\"FortniteClient-Win64-Shipping.exe\" is not existing, where did you lose it? Lol", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 return;
             }
+
+            if (!File.Exists(EAC))
+            {
+                MessageBox.Show("\"FortniteClient-Win64-Shipping_EAC.exe\" is not existing, where did you lose it? Lol", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                return;
+            }
+
+            if (!File.Exists(FNL))
+            {
+                MessageBox.Show("\"FortniteLauncher.exe\" is not existing, where did you lose it? Lol", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                return;
+            }
+
             Settings.Default.Path = this.pathTextBox.Text;
             Settings.Default.Save();
-            string DLL1 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "ManoraSSL.dll");
-            if (!File.Exists(DLL1))
-            {
-                MessageBox.Show("\"ManoraSSL.dll\" is missing, just put it in the folder where the launcher is.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand); //Jak to NASZ runtime, co ty gadasz lol
-                return;
-            }
-            string DLL2 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Matchmaking.dll");
-            if (!File.Exists(DLL2))
-            {
-                MessageBox.Show("\"Matchmaking.dll\" is missing, just put it in the folder where the launcher is.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                return;
-            }
+
+
             Main._clientProcess = new Process
             {
-                StartInfo = new ProcessStartInfo(FNClient, Args)
+                StartInfo = new ProcessStartInfo(FNClient, clientargs)
                 {
                     UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    CreateNoWindow = false
+                    RedirectStandardOutput = false,
+                    CreateNoWindow = true
                 }
             };
+
+            Process FNLP = new Process();
+            FNLP.StartInfo.FileName = FNL;
+            FNLP.Start();
+            foreach (ProcessThread thread in FNLP.Threads)
+                Win32.SuspendThread(Win32.OpenThread(2, false, thread.Id));
+            Process EACP = new Process();
+            EACP.StartInfo.FileName = EAC;
+            EACP.StartInfo.Arguments = "-epiclocale=en -noeac -fromfl=be -fltoken=h1h4370717422124b232eFac -frombe";
+            EACP.Start();
+            foreach (ProcessThread thread in (ReadOnlyCollectionBase)EACP.Threads)
+                Win32.SuspendThread(Win32.OpenThread(2, false, thread.Id));
+
+
+
             Main._clientProcess.Start();
             Task.Run(delegate ()
             {
                 Main._clientProcess.WaitForInputIdle();
                 Main.InternetSetOption(IntPtr.Zero, 39, IntPtr.Zero, 0);
                 Main.InternetSetOption(IntPtr.Zero, 37, IntPtr.Zero, 0);
-                this.Inject(DLL1);
-                this.Inject(DLL2);
+
                 Environment.Exit(0);
             });
             return;
-        }          
+        }
 
         private static Process _clientProcess;
 
@@ -155,16 +174,7 @@ namespace ManoraLau
             return false;
         }
 
-        private void Inject(string DllPath)
-        {
-            IntPtr hProcess = Win32.OpenProcess(1082, false, Main._clientProcess.Id);
-            IntPtr procAddress = Win32.GetProcAddress(Win32.GetModuleHandle("kernel32.dll"), "LoadLibraryA");
-            uint num = (uint)((DllPath.Length + 1) * Marshal.SizeOf(typeof(char)));
-            IntPtr intPtr = Win32.VirtualAllocEx(hProcess, IntPtr.Zero, num, 12288U, 4U);
-            UIntPtr uintPtr;
-            Win32.WriteProcessMemory(hProcess, intPtr, Encoding.Default.GetBytes(DllPath), num, out uintPtr);
-            Win32.CreateRemoteThread(hProcess, IntPtr.Zero, 0U, procAddress, intPtr, 0U, IntPtr.Zero);
-        }
+
 
         [DllImport("wininet.dll")]
         public static extern bool InternetSetOption(IntPtr hInternet, int dwOption, IntPtr lpBuffer, int dwBufferLength);
@@ -178,7 +188,7 @@ namespace ManoraLau
 
         private void button1_Click(object sender, EventArgs e) //guzik do Discorda better | MaTiD
         {
-           System.Diagnostics.Process.Start("http://bit.ly/DiscordMaTiD");
+            System.Diagnostics.Process.Start("http://bit.ly/DiscordMaTiD");
         }
 
         private void launchButton_MouseDown(object sender, MouseEventArgs e)
@@ -216,9 +226,9 @@ namespace ManoraLau
         private void button3_Click(object sender, EventArgs e)
         {
             var text =
-                "Manora, prywatny serwer w Fortnite, by MaTiD" + "\n\n" +
+                "Manora Exchange Code Launcher by MaTiD" + "\n\n" +
                 "Launcher napisany przez: MaTiDa, Artiiego, oraz Sizzy" + "\n\n" +
-                "Pamiętaj aby zarejestrować się na http://manora.tk" + "\n\n" +
+                "Launcher pozwala wejść do każdego sezonu, łącząc sie z serwerami Epica" + "\n\n" +
                 "Jeśli kupiłeś ten program, zostałeś oszukany, skontaktuj się z developerem.";
             MessageBox.Show(text);
         }
@@ -226,6 +236,12 @@ namespace ManoraLau
         private void button4_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            Settings.Default.Path = exchbox.Text;
+            Settings.Default.Save();
         }
     }
 }

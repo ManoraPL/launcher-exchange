@@ -38,6 +38,8 @@ namespace ManoraLau
             this.button2 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
+            this.exchbox = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // launchButton
@@ -164,6 +166,30 @@ namespace ManoraLau
             this.button4.UseVisualStyleBackColor = false;
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
+            // exchbox
+            // 
+            this.exchbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(21)))), ((int)(((byte)(21)))), ((int)(((byte)(21)))));
+            this.exchbox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.exchbox.Font = new System.Drawing.Font("Microsoft YaHei UI Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.exchbox.ForeColor = System.Drawing.Color.White;
+            this.exchbox.Location = new System.Drawing.Point(230, 239);
+            this.exchbox.Name = "exchbox";
+            this.exchbox.Size = new System.Drawing.Size(349, 21);
+            this.exchbox.TabIndex = 12;
+            this.exchbox.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.BackColor = System.Drawing.Color.Transparent;
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.ForeColor = System.Drawing.Color.White;
+            this.label2.Location = new System.Drawing.Point(12, 235);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(124, 26);
+            this.label2.TabIndex = 13;
+            this.label2.Text = "Exchange:";
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -172,6 +198,8 @@ namespace ManoraLau
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(661, 338);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.exchbox);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.button2);
@@ -205,6 +233,8 @@ namespace ManoraLau
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.TextBox exchbox;
+        private System.Windows.Forms.Label label2;
     }
 }
 
