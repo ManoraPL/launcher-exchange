@@ -1,2 +1,2 @@
 # Manora Launcher
-by Artii, MaTiD and Sizzy
+by artii, MaTiD and Sizzy
